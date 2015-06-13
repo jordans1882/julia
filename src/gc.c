@@ -496,8 +496,8 @@ static void add_lostval_parent(jl_value_t* parent)
 #define verify_val(v) do {                                              \
         if (lostval == (jl_value_t*)(v) && (v) != 0) {                  \
             jl_printf(JL_STDOUT,                                        \
-                      "Found lostval 0x%lx at %s:%d oftype: ",          \
-                      (uintptr_t)(lostval), __FILE__, __LINE__);        \
+                      "Found lostval %p at %s:%d oftype: ",             \
+                      lostval, __FILE__, __LINE__);                     \
             jl_static_show(JL_STDOUT, jl_typeof(v));                    \
             jl_printf(JL_STDOUT, "\n");                                 \
         }                                                               \
@@ -506,9 +506,9 @@ static void add_lostval_parent(jl_value_t* parent)
 
 #define verify_parent(ty, obj, slot, args...) do {                      \
         if (*(jl_value_t**)(slot) == lostval && (obj) != lostval) {     \
-            jl_printf(JL_STDOUT, "Found parent %s 0x%lx at %s:%d\n",    \
-                      ty, (uintptr_t)(obj), __FILE__, __LINE__);        \
-            jl_printf(JL_STDOUT, "\tloc 0x%lx : ", (uintptr_t)(slot));  \
+            jl_printf(JL_STDOUT, "Found parent %s %p at %s:%d\n",       \
+                      (void*)(ty), (void*)(obj), __FILE__, __LINE__);   \
+            jl_printf(JL_STDOUT, "\tloc %p : ", (void*)(slot));         \
             jl_printf(JL_STDOUT, args);                                 \
             jl_printf(JL_STDOUT, "\n");                                 \
             jl_printf(JL_STDOUT, "\ttype: ");                           \
@@ -1432,7 +1432,8 @@ static void grow_mark_stack(void)
     size_t offset = mark_stack - mark_stack_base;
     mark_stack_base = (jl_value_t**)realloc(mark_stack_base, newsz*sizeof(void*));
     if (mark_stack_base == NULL) {
-        jl_printf(JL_STDERR, "Could'nt grow mark stack to : %d\n", newsz);
+        jl_printf(JL_STDERR, "Couldn't grow mark stack to : %u\n",
+                  (unsigned)newsz);
         exit(1);
     }
     mark_stack = mark_stack_base + offset;

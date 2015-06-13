@@ -754,11 +754,12 @@ DLLEXPORT void gdblookup(ptrint_t ip)
     frame_info_from_ip(&func_name, &line_num, &file_name, ip, 0);
     if (func_name != NULL) {
         if (line_num == ip)
-            jl_safe_printf("unknown function (ip: %d)\n", line_num);
+            jl_safe_printf("unknown function (ip: %p)\n", (void*)ip);
         else if (line_num == -1)
             jl_safe_printf("%s at %s (unknown line)\n", func_name, file_name);
         else
-            jl_safe_printf("%s at %s:%d\n", func_name, file_name, line_num);
+            jl_safe_printf("%s at %s:%u\n", func_name, file_name,
+                           (unsigned)line_num);
     }
 }
 
