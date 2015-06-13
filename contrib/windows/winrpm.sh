@@ -9,6 +9,13 @@ set -e
 url=$1
 toinstall=$2
 
+for i in curl xmllint gunzip sort sha256sum 7z; do
+  if [ -z "$(which $i 2>/dev/null)" ]; then
+    echo "error: this script requires having $i installed" >&2
+    exit 1
+  fi
+done
+
 # there is a curl --retry flag but it wasn't working here for some reason
 retry_curl() {
   for i in $(seq 10); do
