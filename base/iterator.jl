@@ -2,6 +2,18 @@
 
 isempty(itr) = done(itr, start(itr))
 
+# eachindex
+
+immutable EachIndex{I}
+    itr::I
+end
+eachindex(itr) = EachIndex(itr)
+
+length(e::EachIndex) = length(e.itr)
+start(e::EachIndex) = start(e.itr)
+next(e::EachIndex, state) = (state, next(e.itr, state)[2])
+done(e::EachIndex, state) = done(e.itr, state)
+
 # enumerate
 
 immutable Enumerate{I}

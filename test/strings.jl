@@ -1732,3 +1732,7 @@ d = UTF32String(c)
 c[1] = 'A'
 @test d=="A"
 
+# iteration
+@test [c for c in "ḟøøƀäṙ"] == ['ḟ', 'ø', 'ø', 'ƀ', 'ä', 'ṙ']
+@test [i for i in eachindex("ḟøøƀäṙ")] == [1, 4, 6, 8, 10, 12]
+@test [x for x in enumerate("ḟøøƀäṙ")] == [(1, 'ḟ'), (2, 'ø'), (3, 'ø'), (4, 'ƀ'), (5, 'ä'), (6, 'ṙ')]

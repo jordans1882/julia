@@ -812,6 +812,7 @@ let a36 = boo32_64()
 end
 @test isequal([1,2,3], [a for (a,b) in enumerate(2:4)])
 @test isequal([2,3,4], [b for (a,b) in enumerate(2:4)])
+@test isequal([1,2,3], [i for i in eachindex(2:4)])
 
 @test_throws DomainError (10.^[-1])[1] == 0.1
 @test (10.^[-1.])[1] == 0.1
