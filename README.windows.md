@@ -73,7 +73,7 @@ or edit `%USERPROFILE%\.gitconfig` and add/edit the lines:
 ```
     Now `exit` the MSYS2 shell and restart it,  *even if you already restarted it above*. This is necessary in case the system upgrade updated the main MSYS2 libs. Reopen the MSYS2 shell and continue with:
 
-    ```
+     ```
     pacman -S diffutils git m4 make patch tar p7zip msys/openssh
 ```
 
@@ -92,19 +92,19 @@ or edit `%USERPROFILE%\.gitconfig` and add/edit the lines:
 
 4. Build Julia and its dependencies from source.
   1. Get the Julia sources
-    ```
+     ```
     git clone https://github.com/JuliaLang/julia.git
     cd julia
 ```
 
   2. Run the following script to download the correct versions of the MinGW-w64 compilers
-    ```
+     ```
     contrib/windows/get_toolchain.sh 32  # for 32 bit Julia
     # or
     contrib/windows/get_toolchain.sh 64  # for 64 bit Julia
 ```
-     Follow the printed instructions by running either
-    ```
+     Then follow the printed instructions by running either
+     ```
     export PATH=$PWD/usr/i686-w64-mingw32/sys-root/mingw/bin:$PATH  # for 32 bit Julia
     # or
     export PATH=$PWD/usr/x86_64-w64-mingw32/sys-root/mingw/bin:$PATH  # for 64 bit Julia
@@ -118,7 +118,7 @@ or edit `%USERPROFILE%\.gitconfig` and add/edit the lines:
 ```
 
   4. Start the build
-    ```
+     ```
     make -j 4   # Adjust the number of cores (4) to match your build environment.
 ```
 
@@ -189,69 +189,30 @@ Julia can be also compiled from source in [Cygwin](http://www.cygwin.com), using
 
 If you prefer to cross-compile, the following steps should get you started.
 
-### Ubuntu and Mac Dependencies (these steps will work for almost any linux platform)
+For maximum compatibility with packages that use [WinRPM.jl](https://github.com/JuliaLang/WinRPM.jl) for binary dependencies on Windows, it is recommended that you use OpenSUSE 13.1 for cross-compiling a Windows build of Julia. If you use a different Linux distribution (or OS X), install [Docker](https://docs.docker.com/installation) and use the following `Dockerfile`:
+```
+# Dockerfile for MinGW-w64 cross-compilation of Julia
+FROM opensuse:13.1
 
-First, you will need to ensure your system has the required dependencies. We need wine (>=1.7.5),
-a system compiler, and some downloaders.
+# Change the following to i686-w64-mingw32 for 32 bit Julia:
+ENV XC_HOST x86_64-w64-mingw32
+# Change the following to 32 for 32 bit Julia:
+ENV BITS 64
 
-On Ubuntu:
-
-    apt-add-repository ppa:ubuntu-wine/ppa
-    apt-get upate
-    apt-get install wine1.7 subversion cvs gcc wget p7zip-full
-
-
-On Mac: Install XCode, XCode command line tools, X11 (now [XQuartz](http://xquartz.macosforge.org/)),
-and [MacPorts](http://www.macports.org/install.php) or [Homebrew](http://mxcl.github.io/homebrew/).
-Then run ```port install wine wget``` or ```brew install wine wget```, as appropriate.
-
-On Both:
-
-Unfortunately, the version of gcc installed by Ubuntu targets pthreads.
-On Mac, the situation is similar: the version in MacPorts is very old and Homebrew does not have it.
-So first we need to get a cross-compile version of gcc.
-Most binary packages appear to not include gfortran, so we will need to compile it from source (or ask @vtjnash to send you a tgz of his build).
-This is typically quite a bit of work, so we will use [this script](http://sourceforge.net/projects/mingw-w64-dgn/) to make it easy.
-
-1. `svn checkout svn checkout svn://svn.code.sf.net/p/mingw-w64-dgn/code/trunk mingw-w64-dgn-code`
-2. `cd mingw-w64-dgn`
-3. edit `rebuild_cross.sh` and make the following two changes:
-  a. uncomment `export MAKE_OPT="-j 2"`, if appropriate for your machine
-  b. add `fortran` to the end of `--enable-languages=c,c++,objc,obj-c++`
-5. `bash update_source.sh`
-4. `bash rebuild_cross.sh`
-5. `mv cross ~/cross-w64`
-6. `export PATH=$HOME/cross-w64/bin:$PATH` # NOTE: it is important that you remember to always do this before using make in the following steps!, you can put this line in your .profile to make it easy
-
-Then we can essentially just repeat these steps for the 32-bit compiler, reusing some of the work:
-
-7. `cd ..`
-8. `cp -a mingw-w64-dgn mingw-w32-dgn`
-9. `cd mingw-w32-dgn`
-10. `rm -r cross build`
-11. `bash rebuild_cross.sh 32r`
-12. `mv cross ~/cross-w32`
-13. `export PATH=$HOME/cross-w32/bin:$PATH` # NOTE: it is important that you remember to always do this before using make in the following steps!, you can put this line in your .profile to make it easy
-
-Note: for systems that support rpm-based package managers, the OpenSUSE build service appears to contain a fully up-to-date versions of the necessary dependencies.
-
-### Arch Linux Dependencies
-
-1. Install the following packages from the official Arch repository:
-`sudo pacman -S cloog gcc-ada libmpc p7zip ppl subversion zlib`
-2. The rest of the prerequisites consist of the mingw-w64 packages, which are available in the AUR Arch repository. They must be installed exactly in the order they are given or else their installation will fail. The `yaourt` package manager is used for illustration purposes; you may instead follow the [Arch instructions for installing packages from AUR](https://wiki.archlinux.org/index.php/Arch_User_Repository#Installing_packages) or may use your preferred package manager. To start with, install `mingw-w64-binutils` via the command
-`yaourt -S mingw-w64-binutils`
-3. `yaourt -S mingw-w64-headers-svn`
-4. `yaourt -S mingw-w64-headers-bootstrap`
-5. `yaourt -S mingw-w64-gcc-base`
-6. `yaourt -S mingw-w64-crt-svn`
-7. Remove `mingw-w64-headers-bootstrap` without removing its dependent mingw-w64 installed packages by using the command
-`yaourt -Rdd mingw-w64-headers-bootstrap`
-8. `yaourt -S mingw-w64-winpthreads`
-9. Remove `mingw-w64-gcc-base` without removing its installed mingw-w64 dependencies:
-`yaourt -Rdd mingw-w64-gcc-base`
-10. Complete the installation of the required `mingw-w64` packages:
-`yaourt -S mingw-w64-gcc`
+RUN zypper addrepo http://download.opensuse.org/repositories/windows:mingw:win$BITS/openSUSE_13.1/windows:mingw:win$BITS.repo && \
+    zypper --gpg-auto-import-keys refresh && \
+    zypper -n install --no-recommends git make cmake tar wine which curl \
+        python python-xml patch gcc-c++ m4 p7zip.i586 libxml2-tools && \
+    zypper -n install mingw$BITS-cross-gcc-c++ mingw$BITS-cross-gcc-fortran \
+        mingw$BITS-libstdc++6 mingw$BITS-libgfortran3 mingw$BITS-libssp0
+# opensuse packages the mingw runtime dlls under sys-root/mingw/bin, not /usr/lib64/gcc
+RUN cp /usr/$XC_HOST/sys-root/mingw/bin/*.dll /usr/lib*/gcc/$XC_HOST/*/ && \
+    git clone git://github.com/JuliaLang/julia.git /home/user/julia && \
+    git config --global url."git://".insteadOf https://
+# use git:// to avoid SSL certificate problems with JuliaDoc
+WORKDIR /home/user/julia
+RUN make -j4 win-extras binary-dist
+```
 
 ### Cross-building Julia
 
@@ -262,7 +223,7 @@ Finally, the build and install process for Julia:
 3. `make`
 4. `make win-extras` (Necessary before running `make binary-dist`p)
 5. `make binary-dist`
-6. move the julia-* directory / zip file to the target machine
+6. move the julia-*.exe installer to the target machine
 
 If you are building for 64-bit windows, the steps are essentially the same. Just replace i686 in XC_HOST with x86_64. (note: on Mac, wine only runs in 32-bit mode)
 
