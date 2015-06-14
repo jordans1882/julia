@@ -37,14 +37,21 @@ mkdir -p usr/bin
 for i in gcc_s_$exc-1 ssp-0 stdc++-6 gfortran-3 quadmath-0; do
   cp $mingwdir/bin/lib$i.dll usr/bin
 done
-for i in gcc g++ gfortran; do
-  # this doesn't actually work properly on cygwin yet, since these
-  # are mingw compiler executables that don't understand cygwin paths
-  cp $mingwdir/bin/$i.exe $mingwdir/bin/$host-$i.exe
-done
-# copy around binutils and includes
+# copy around binutils and make a junction for includes
 cp $mingwdir/$host/bin/* $mingwdir/bin
-cp -r $mingwdir/include $mingwdir/$host
-$mingwdir/bin/g++ --version
+case $(uname) in
+  CYGWIN*)
+    cmd /C mklink /J $(cygpath -w $mingwdir/$host/include) $(cygpath -w $mingwdir/include)
+    # treat these like cross-compilers if we're running from cygwin
+    for i in gcc g++ gfortran; do
+      mv $mingwdir/bin/$i.exe $mingwdir/bin/$host-$i.exe
+    done
+    $mingwdir/bin/$host-g++ --version
+    ;;
+  *)
+    cmd //C mklink //J $(cygpath -w $mingwdir/$host/include) $(cygpath -w $mingwdir/include)
+    $mingwdir/bin/g++ --version
+    ;;
+esac
 echo "Toolchain successfully downloaded to $PWD/$mingwdir"
 echo "Add toolchain to your path by running \`export PATH=$PWD/$mingwdir/bin:\$PATH\`"
