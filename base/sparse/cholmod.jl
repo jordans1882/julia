@@ -137,6 +137,11 @@ function __init__()
     ### Initiate CHOLMOD
     global const cmn = fill(0xff, common_size)
     start(cmn)
+
+    cnfg = cglobal((:SuiteSparse_config, :libsuitesparseconfig), Ptr{Void})
+    unsafe_store!(cnfg, cglobal(:jl_gc_counted_malloc), 1)
+    unsafe_store!(cnfg, cglobal(:jl_gc_counted_realloc_with_old_size), 2*div(WORD_SIZE, 8) + 1)
+    unsafe_store!(cnfg, cglobal(:jl_gc_counted_free), 3*div(WORD_SIZE, 8) + 1)
 end
 
 function set_print_level(cm::Array{UInt8}, lev::Integer)
