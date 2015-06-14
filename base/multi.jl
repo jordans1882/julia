@@ -120,7 +120,7 @@ Worker(id, r_stream, w_stream, manager) = Worker(id, r_stream, w_stream, manager
 
 function set_worker_state(w, state)
     w.state = state
-    notify(w.c_state)
+    notify(w.c_state; all=true)
 end
 
 function send_msg_now(w::Worker, kind, args...)
@@ -152,6 +152,15 @@ end
 
 function send_msg_(w::Worker, kind, args, now::Bool)
     #println("Sending msg $kind")
+    if w.state == W_CREATED
+        # Since higher pids connect with lower pids, the remote worker
+        # may not have connected to us yet. Wait for some time.
+        timeout = 60.0
+        @schedule (sleep(timeout); notify(w.c_state; all=true))
+        wait(w.c_state)
+        w.state == W_CREATED && error("peer $(w.id) didn't connect to $(myid()) within $timeout seconds")
+    end
+
     io = w.w_stream
     lock(io.lock)
     try
@@ -297,7 +306,6 @@ type ProcessExitedException <: Exception end
 
 worker_from_id(i) = worker_from_id(PGRP, i)
 function worker_from_id(pg::ProcessGroup, i)
-#   Processes with pids > ours, have to connect to us. May not have happened. Wait for some time.
     if in(i, map_del_wrkr)
         throw(ProcessExitedException())
     end
@@ -933,11 +941,6 @@ function connect_to_peer(manager::ClusterManager, rpid::Int, wconfig::WorkerConf
         w = Worker(rpid, r_s, w_s, manager, wconfig)
         process_messages(w.r_stream, w.w_stream)
         send_msg_now(w, :identify_socket, myid())
-
-        # test connectivity with an echo
-        if remotecall_fetch(rpid, ()->:ok) != :ok
-            throw("ping test with remote peer failed")
-        end
     catch e
         println(STDERR, "Error [$e] on $(myid()) while connecting to peer $rpid. Exiting.")
         exit(1)
@@ -1102,9 +1105,25 @@ function addprocs(manager::ClusterManager; kwargs...)
 
     wait(t_launch)      # catches any thrown errors from the launch task
 
+    # Let all workers know the current set of valid workers. Useful
+    # for nprocs(), nworkers(), etc to return valid values on the workers.
+    # Since all worker-to-worker setups may not have completed by the time this
+    # function returns to the caller.
+    all_w = workers()
+    for pid in all_w
+        remote_do(pid, set_valid_processes, all_w)
+    end
+
     sort!(launched_q)
 end
 
+function set_valid_processes(plist::Array{Int})
+    for pid in setdiff(plist, workers())
+        if myid() != pid
+            Worker(pid)
+        end
+    end
+end
 
 default_addprocs_params() = AnyDict(
     :dir      => pwd(),
