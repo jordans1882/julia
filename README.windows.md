@@ -25,11 +25,9 @@ Both the 32-bit and 64-bit versions are supported.
 The 32-bit (i686) binary will run on either a 32-bit and 64-bit operating system.
 The 64-bit (x86_64) binary will only run on 64-bit Windows and will otherwise refuse to launch.
 
-1. Download and install [7-Zip](http://www.7-zip.org/download.html). Install the full program, not just the command line version.
+1. [Download](http://julialang.org/downloads) the latest version of Julia. Extract the binary to a reasonable destination folder, e.g. `C:\julia`.
 
-2. [Download](http://julialang.org/downloads) the latest version of Julia. Extract the binary to a reasonable destination folder, e.g. `C:\julia`.
-
-3. Double-click the file `julia.bat` to launch Julia.
+2. Double-click the `julia` shortcut to launch Julia.
 
 # Line endings
 
@@ -56,38 +54,18 @@ or edit `%USERPROFILE%\.gitconfig` and add/edit the lines:
 ## Compiling with MinGW/MSYS2
 
 ### MSYS2 provides a robust MSYS experience.
-### The instructions in this section were tested with the latest versions of all packages specified as of 2014-02-28.
 
-1. Install [7-Zip](http://www.7-zip.org/download.html).
+1. Install [Python 2.x](http://www.python.org/download/releases). Do **not** install Python 3.
 
-2. Install [Python 2.x](http://www.python.org/download/releases). Do **not** install Python 3.
+2. Install [CMake](http://www.cmake.org/download/).
 
-3. Install [CMake](http://www.cmake.org/download/).
+3. Install and configure [MSYS2](https://msys2.github.io), a minimal POSIX-like environment for Windows.
 
-4. Install [MinGW-builds](http://sourceforge.net/projects/mingwbuilds/), a Windows port of GCC, as follows. Do **not** use the regular MinGW distribution.
-  1. Download the [MinGW-builds installer](http://downloads.sourceforge.net/project/mingwbuilds/mingw-builds-install/mingw-builds-install.exe).
-  2. Run the installer. When prompted, choose:
-    - Version: the most recent version (these instructions were tested with 4.8.1)
-    - Architecture: `x32` or `x64` as appropriate and desired.
-    - Threads: `win32` (not posix)
-    - Exception: `sjlj` (for x32) or `seh` (for x64). Do not choose dwarf2.
-    - Build revision: most recent available (tested with 5)
-  3. Do **not** install to a directory with spaces in the name. You will have to change the default installation path, for example,
-    - `C:\mingw-builds\x64-4.8.1-win32-seh-rev5` for 64 bits
-    - `C:\mingw-builds\x32-4.8.1-win32-sjlj-rev5` for 32 bits
+  1. Download the latest installer for the [32-bit](http://sourceforge.net/projects/msys2/files/Base/i686/) or [64-bit](http://sourceforge.net/projects/msys2/files/Base/x86_64/) distribution. The installer will have a name like `msys2-i686-yyyymmdd.exe` or `msys2-x86_64-yyyymmdd.exe`.
 
-5. Install and configure [MSYS2](http://sourceforge.net/projects/msys2), a minimal POSIX-like environment for Windows.
+  2. Double-click `msys2_shell.bat` in the installed msys directory. This will initialize MSYS2. The shell will tell you to `exit` and restart the shell. For now, ignore it.
 
-  1. Download the latest base [32-bit](http://sourceforge.net/projects/msys2/files/Base/i686/) or [64-bit](http://sourceforge.net/projects/msys2/files/Base/x86_64/) distribution, consistent with the architecture you chose for MinGW-builds. The archive will have a name like `msys2-base-x86_64-yyyymmdd.tar.xz` and these instructions were tested with `msys2-base-x86_64-20140216.tar.xz`.
-
-  2. Using [7-Zip](http://www.7-zip.org/download.html), extract the archive to any convenient directory.
-    - *N.B.* Some versions of this archive contain zero-byte files that clash with existing files. If prompted, choose **not** to overwrite existing files.
-    - You may need to extract the tarball in a separate step. This will create an `msys32` or `msys64` directory, according to the architecture you chose.
-    - Move the `msys32` or `msys64` directory into your MinGW-builds directory, which is `C:\mingw-builds` if you followed the suggestions in step 3. We will omit the "32" or "64" in the steps below and refer to this as "the msys directory".
-
-  3. Double-click `msys2_shell.bat` in the msys directory. This will initialize MSYS2. The shell will tell you to `exit` and restart the shell. For now, ignore it.
-
-  4. Update MSYS2 and install packages required to build julia, using the `pacman` package manager included in MSYS2:
+  3. Update MSYS2 and install packages required to build julia, using the `pacman` package manager included in MSYS2:
 
      ```
     pacman-key --init     #Download keys
@@ -96,17 +74,13 @@ or edit `%USERPROFILE%\.gitconfig` and add/edit the lines:
     Now `exit` the MSYS2 shell and restart it,  *even if you already restarted it above*. This is necessary in case the system upgrade updated the main MSYS2 libs. Reopen the MSYS2 shell and continue with:
 
     ```
-    pacman -S diffutils git m4 make patch tar msys/openssh
+    pacman -S diffutils git m4 make patch tar p7zip msys/openssh
 ```
 
-  5. Configure your MSYS2 shell for convenience:
+  4. Configure your MSYS2 shell for convenience:
 
      ```
-    echo "mount C:/Python27 /python" >> ~/.bashrc
-    # uncomment ONE of the following two lines
-    #echo "mount C:/mingw-builds/x64-4.8.1-win32-seh-rev5/mingw64 /mingw" >> ~/.bashrc
-    #echo "mount C:/mingw-builds/x32-4.8.1-win32-sjlj-rev5/mingw32 /mingw" >> ~/.bashrc
-    echo "export PATH=/usr/local/bin:/usr/bin:/opt/bin:/mingw/bin:/python" >> ~/.bashrc
+    echo "export PATH=/usr/local/bin:/usr/bin:/opt/bin:/c/Python27" >> ~/.bashrc
 ```
 
      *N.B.* The `export` clobbers whatever `$PATH` is already defined. This is suggested to avoid path-masking. If you use MSYS2 for purposes other than building Julia, you may prefer to append rather than clobber.
@@ -114,22 +88,28 @@ or edit `%USERPROFILE%\.gitconfig` and add/edit the lines:
      *N.B.* All of the path-separators in the mount commands are unix-style.
 
 
-  6. Configuration of the toolchain is complete. Now `exit` the MSYS2 shell.
+  5. Configuration of MSYS2 is complete. Now `exit` the MSYS2 shell.
 
-6. Build Julia and its dependencies from source.
-  1. Relaunch the MSYS2 shell and type
-
-     ```
-    . ~/.bashrc  # Some versions of MSYS2 do not run this automatically
-```
-
-     Ignore any warnings you see from `mount` about `/mingw` and `/python` not existing.
-
-  2. Get the Julia sources
+4. Build Julia and its dependencies from source.
+  1. Get the Julia sources
     ```
     git clone https://github.com/JuliaLang/julia.git
     cd julia
 ```
+
+  2. Run the following script to download the correct versions of the MinGW-w64 compilers
+    ```
+    contrib/windows/get_toolchain.sh 32  # for 32 bit Julia
+    # or
+    contrib/windows/get_toolchain.sh 64  # for 64 bit Julia
+```
+     Follow the printed instructions by running either
+    ```
+    export PATH=$PWD/usr/i686-w64-mingw32/sys-root/mingw/bin:$PATH  # for 32 bit Julia
+    # or
+    export PATH=$PWD/usr/x86_64-w64-mingw32/sys-root/mingw/bin:$PATH  # for 64 bit Julia
+```
+     to add the downloaded MinGW-w64 compilers to your path (temporarily, only needed during the shell session when you build Julia).
 
   3. Specify the location where you installed CMake
 
@@ -141,12 +121,13 @@ or edit `%USERPROFILE%\.gitconfig` and add/edit the lines:
     ```
     make -j 4   # Adjust the number of cores (4) to match your build environment.
 ```
-7. Setup Package Development Environment
+
+5. Setup Package Development Environment
   1. The `Pkg` module in Base provides many convenient tools for [developing and publishing packages](http://docs.julialang.org/en/latest/manual/packages/).
   One of the packages added through pacman above was `openssh`, which will allow secure access to GitHub APIs.
   Follow GitHub's [guide](https://help.github.com/articles/generating-ssh-keys) to setting up SSH keys to ensure your local machine can communicate with GitHub effectively.
 
-  5. In case of the issues with building packages (i.e. ICU fails to build with the following error message ```error compiling xp_parse: error compiling xp_make_parser: could not load module libexpat-1: %```) run ```make win-extras``` and then copy everything from the ```dist-extras``` folder into ```usr/bin```.
+  2. In case of the issues with building packages (i.e. ICU fails to build with the following error message ```error compiling xp_parse: error compiling xp_make_parser: could not load module libexpat-1: %```) run ```make win-extras``` and then copy everything from the ```dist-extras``` folder into ```usr/bin```.
 
 ## Cygwin-to-MinGW cross compiling
 
