@@ -61,19 +61,18 @@ or edit `%USERPROFILE%\.gitconfig` and add/edit the lines:
 
 3. Install and configure [MSYS2](https://msys2.github.io), a minimal POSIX-like environment for Windows.
 
-  1. Download the latest installer for the [32-bit](http://sourceforge.net/projects/msys2/files/Base/i686/) or [64-bit](http://sourceforge.net/projects/msys2/files/Base/x86_64/) distribution. The installer will have a name like `msys2-i686-yyyymmdd.exe` or `msys2-x86_64-yyyymmdd.exe`.
+  1. Download and run the latest installer for the [32-bit](http://sourceforge.net/projects/msys2/files/Base/i686/) or [64-bit](http://sourceforge.net/projects/msys2/files/Base/x86_64/) distribution. The installer will have a name like `msys2-i686-yyyymmdd.exe` or `msys2-x86_64-yyyymmdd.exe`.
 
-  2. Double-click `msys2_shell.bat` in the installed msys directory. This will initialize MSYS2. The shell will tell you to `exit` and restart the shell. For now, ignore it.
-
-  3. Update MSYS2 and install packages required to build julia, using the `pacman` package manager included in MSYS2:
+  2. Double-click `msys2_shell.bat` in the installed msys directory. Initialize the MSYS2 base system using the `pacman` package manager included in MSYS2:
 
      ```
-    pacman-key --init     #Download keys
-    pacman -Syu           #Update package database and full system upgrade
+    pacman --needed -Sy bash pacman pacman-mirrors msys2-runtime
 ```
-    Now `exit` the MSYS2 shell and restart it,  *even if you already restarted it above*. This is necessary in case the system upgrade updated the main MSYS2 libs. Reopen the MSYS2 shell and continue with:
+
+  3. Exit and restart MSYS2, then install packages required to build julia:
 
      ```
+    pacman -Syu           #Update package database and full system upgrade
     pacman -S diffutils git m4 make patch tar p7zip msys/openssh
 ```
 
@@ -91,7 +90,7 @@ or edit `%USERPROFILE%\.gitconfig` and add/edit the lines:
   5. Configuration of MSYS2 is complete. Now `exit` the MSYS2 shell.
 
 4. Build Julia and its dependencies from source.
-  1. Get the Julia sources
+  1. Open a new MSYS2 shell and get the Julia sources
      ```
     git clone https://github.com/JuliaLang/julia.git
     cd julia
